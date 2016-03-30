@@ -1,0 +1,15 @@
+
+en:
+  admin:
+    actions:
+      association_nested:
+        title: "Associations"
+        menu: "Associations"
+        breadcrumb: "Associations"
+        link: "Associations"
+        bulk_link: "Associations"
+        done: "Associations Done"
+    flash:
+      has_many_association_config: "has many association config for %{association_name} on %{parent_model} with id '%{parent_object_id}' could not be found"
+      parent_model_not_found: "Parent model '%{parent_model}' could not be found"
+      parent_object_not_found: "Parent %{parent_model} with id '%{parent_object_id}' could not be found"

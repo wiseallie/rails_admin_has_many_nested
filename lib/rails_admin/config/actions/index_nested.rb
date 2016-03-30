@@ -1,0 +1,38 @@
+require 'rails_admin/config/actions/index'
+module RailsAdmin
+  module Config
+    module Actions
+      class IndexNested < Index
+        RailsAdmin::Config::Actions.register(self)
+
+        register_instance_option :association_nested_action? do
+          true
+        end
+
+        register_instance_option :collection do
+          false
+        end
+
+        register_instance_option :has_many_nested_collection do
+          true
+        end
+
+        register_instance_option :breadcrumb_parent do
+          [:index, bindings[:parent_abstract_model], bindings[:parent_object], bindings[:association_name]]
+        end
+
+
+        # View partial name (called in default :controller block)
+        register_instance_option :template_name do
+          :index
+        end
+
+        # For Cancan and the like
+        register_instance_option :authorization_key do
+          :index
+        end
+
+      end
+    end
+  end
+end
