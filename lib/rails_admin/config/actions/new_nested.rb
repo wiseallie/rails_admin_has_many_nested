@@ -15,7 +15,7 @@ module RailsAdmin
         end
 
         register_instance_option :breadcrumb_parent do
-          [:new, bindings[:parent_abstract_model], bindings[:parent_object], bindings[:association_name]]
+          [:index_nested, bindings[:controller].try(:parent_abstract_model), bindings[:controller].try(:parent_object)]
         end
 
         # View partial name (called in default :controller block)

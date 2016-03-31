@@ -13,3 +13,52 @@ en:
       has_many_association_config: "has many association config for %{association_name} on %{parent_model} with id '%{parent_object_id}' could not be found"
       parent_model_not_found: "Parent model '%{parent_model}' could not be found"
       parent_object_not_found: "Parent %{parent_model} with id '%{parent_object_id}' could not be found"
+    actions:
+      index_nested:
+        title: "List of %{model_label_plural}"
+        menu: "List"
+        breadcrumb: "%{model_label_plural}"
+      show_nested:
+        title: "Details for %{model_label} '%{object_label}'"
+        menu: "Show"
+        breadcrumb: "%{object_label}"
+      show_in_app_nested:
+        menu: "Show in app"
+      new_nested:
+        title: "New %{model_label}"
+        menu: "Add new"
+        breadcrumb: "New"
+        link: "Add a new %{model_label}"
+        done: "created"
+      edit_nested:
+        title: "Edit %{model_label} '%{object_label}'"
+        menu: "Edit"
+        breadcrumb: "Edit"
+        link: "Edit this %{model_label}"
+        done: "updated"
+      delete_nested:
+        title: "Delete %{model_label} '%{object_label}'"
+        menu: "Delete"
+        breadcrumb: "Delete"
+        link: "Delete '%{object_label}'"
+        done: "deleted"
+      bulk_delete_nested:
+        title: "Delete %{model_label_plural}"
+        menu: "Multiple delete"
+        breadcrumb: "Multiple delete"
+        bulk_link: "Delete selected %{model_label_plural}"
+      export_nested:
+        title: "Export %{model_label_plural}"
+        menu: "Export"
+        breadcrumb: "Export"
+        link: "Export found %{model_label_plural}"
+        bulk_link: "Export selected %{model_label_plural}"
+        done: "exported"
+      history_index_nested:
+        title: "History for %{model_label_plural}"
+        menu: "History"
+        breadcrumb: "History"
+      history_show_nested:
+        title: "History for %{model_label} '%{object_label}'"
+        menu: "History"
+        breadcrumb: "History"

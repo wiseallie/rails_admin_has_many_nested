@@ -14,6 +14,11 @@ module RailsAdmin
           true
         end
 
+
+        register_instance_option :breadcrumb_parent do
+          [:index_nested, bindings[:controller].try(:nested_abstract_model), bindings[:controller].try(:nested_object)]
+        end
+
         # View partial name (called in default :controller block)
         register_instance_option :template_name do
           :edit

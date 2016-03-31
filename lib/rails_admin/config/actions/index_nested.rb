@@ -18,13 +18,12 @@ module RailsAdmin
         end
 
         register_instance_option :breadcrumb_parent do
-          [:index, bindings[:parent_abstract_model], bindings[:parent_object], bindings[:association_name]]
+          [:show, bindings[:controller].try(:parent_abstract_model), bindings[:controller].try(:parent_object)]
         end
-
 
         # View partial name (called in default :controller block)
         register_instance_option :template_name do
-          :index
+          :index_nested
         end
 
         # For Cancan and the like
