@@ -14,6 +14,11 @@ module RailsAdmin
           true
         end
 
+        # View partial name (called in default :controller block)
+        register_instance_option :template_name do
+          :history_index_nested
+        end
+
       end
     end
   end

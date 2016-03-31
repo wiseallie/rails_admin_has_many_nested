@@ -13,7 +13,11 @@ module RailsAdmin
         register_instance_option :has_many_nested_member do
           true
         end
-
+        
+        # View partial name (called in default :controller block)
+        register_instance_option :template_name do
+          :history_show_nested
+        end
       end
     end
   end

@@ -20,7 +20,7 @@ module RailsAdmin
 
         # View partial name (called in default :controller block)
         register_instance_option :template_name do
-          :delete
+          :delete_nested
         end
 
       end

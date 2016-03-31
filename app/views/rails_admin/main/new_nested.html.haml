@@ -1,0 +1,2 @@
+= rails_admin_form_for @nested_object, url: new_nested_path(parent_model_name: @parent_model_name, parent_object_id: @parent_object.id, association_name: @association_name, id: @nested_object.id), as: @abstract_model.param_key, html: { multipart: true, class: "form-horizontal denser", data: { title: @page_name } } do |form|
+  = form.generate action: :create

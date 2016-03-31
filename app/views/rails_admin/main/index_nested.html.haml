@@ -6,7 +6,7 @@
   sort_reverse = params[:sort_reverse]
   sort = params[:sort]
   params.delete(:sort) if params[:sort] == @model_config.list.sort_by.to_s
-  export_action = RailsAdmin::Config::Actions.find(:export, { controller: self.controller, abstract_model: @nested_abstract_model })
+  export_action = RailsAdmin::Config::Actions.find(:export_nested, nested_bindings({ controller: self.controller, abstract_model: @nested_abstract_model }))
   export_action = nil unless export_action && authorized?(export_action.authorization_key, @nested_abstract_model)
   description = RailsAdmin.config(@nested_abstract_model.model_name).description
   properties = @model_config.list.with(nested_bindings(object: @nested_abstract_model.model.new)).visible_fields
@@ -17,7 +17,7 @@
   other_right = sets[params[:set].to_i + 1].present?
 
 - content_for :contextual_tabs do
-  = bulk_menu
+  = nested_bulk_menu
   - if filterable_fields.present?
     %li.dropdown{style: 'float:right'}
       %a.dropdown-toggle{href: '#', :'data-toggle' => "dropdown"}
@@ -57,7 +57,7 @@
           %button#remove_filter.btn.btn-info{title: "Reset filters"}
             %i.icon-white.icon-remove
       - if export_action
-        %span{style: 'float:right'}= link_to wording_for(:link, export_action), export_nested_path(params.except('set').except('page')), class: 'btn btn-info'
+        %span{style: 'float:right'}= link_to nested_wording_for(:link, export_action), export_nested_path(params.except('set').except('page')), class: 'btn btn-info'
 
   - unless @model_config.list.scopes.empty?
     %ul.nav.nav-tabs#scope_selector

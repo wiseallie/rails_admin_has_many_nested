@@ -19,7 +19,7 @@ module RailsAdmin
         parent_object parent_model parent_model_name parent_abstract_model parent_model_config  parent_properties
         object model model_name  abstract_model model_config  properties
         nested_object nested_model nested_model_name nested_abstract_model nested_model_config  nested_properties
-        has_many_association_config association_name
+        has_many_association_config association_name association_label
         )
 
         def initialize_has_many_nested
@@ -33,32 +33,27 @@ module RailsAdmin
 
           rescue_from ParentModelNotFound do
             flash[:error] = I18n.t('admin.flash.parent_model_not_found', parent_model: @parent_model_name)
-            params[:action] = 'dashboard'
-            redirect_to url_for(params)
+            render :error_nested
           end
 
           rescue_from ParentObjectNotFound do
             flash[:error] = I18n.t('admin.flash.parent_object_not_found', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id])
-            params[:action] = 'dashboard'
-            redirect_to url_for(params)
+            render :error_nested
           end
 
           rescue_from HasManyConfigNotFound do
             flash[:error] = I18n.t('admin.flash.has_many_association_config', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id], association_name: params[:association_name])
-            params[:action] = 'dashboard'
-            redirect_to url_for(params)
+            render :error_nested
           end
 
           rescue_from NestedModelNotFound do
             flash[:error] = I18n.t('admin.flash.nested_model_not_found', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id], association_name: params[:association_name], nested_model: params[:nested_model_name])
-            redirect_to url_for(params)
-            dashboard
+            render :error_nested
           end
 
           rescue_from NestedObjectNotFound do
             flash[:error] = I18n.t('admin.flash.nested_object_not_found', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id], association_name: params[:association_name], nested_model: params[:nested_model_name], nested_object_id: params[:id])
-            params[:action] = 'index_nested'
-            index_nested
+            render :error_nested
           end
 
           ClassMethods::ATTR_ACCESSORS_TO_DEFINE.each do |a|
@@ -72,7 +67,8 @@ module RailsAdmin
             helper_method a.to_sym
             hide_action a.to_sym
           end
-          helper_method :nested_bindings
+          helper_method :nested_bindings, :nested_wording_for
+
         end
       end
 
@@ -82,7 +78,10 @@ module RailsAdmin
 
       def instance_eval(&block)
         if @action && !@action.bindings[:nested_controller_bindings_set]
-          @action = @action.with(nested_bindings({controller: self, abstract_model: @abstract_model, object: @object, nested_controller_bindings_set: true}))
+          @action = @action.with(nested_bindings({controller: self, nested_controller_bindings_set: true}))
+          if @action.has_many_nested_collection || @action.has_many_nested_member
+            @page_name = nested_wording_for(:title)
+          end
         end
         super(&block)
       end
@@ -96,6 +95,26 @@ module RailsAdmin
         bindings_hash
       end
 
+
+      def nested_wording_for(label, action = @action, parent_abstract_model = @parent_abstract_model, parent_object = @parent_object, association_name = @association_name, association_label = @association_label, nested_abstract_model= @nested_abstract_model, nested_object = @nested_object)
+        parent_model_config = parent_abstract_model.try(:config)
+        nested_model_config = nested_abstract_model.try(:config)
+
+        nested_object = nested_abstract_model && nested_object.is_a?(nested_abstract_model.model) ? nested_object : nil
+        action = RailsAdmin::Config::Actions.find(action.to_sym) if action.is_a?(Symbol) || action.is_a?(String)
+        capitalize_first_letter I18n.t(
+          "admin.actions.#{action.i18n_key}.#{label}_nested",
+          parent_model_label: parent_model_config && parent_model_config.label,
+          parent_model_label_plural: parent_model_config && parent_model_config.label_plural,
+          parent_object_label: parent_model_config && parent_object.try(parent_model_config.object_label_method),
+          nested_model_label: nested_model_config && nested_model_config.label,
+          nested_model_label_plural: nested_model_config && nested_model_config.label_plural,
+          nested_object_label: nested_model_config && nested_object.try(model_config.object_label_method),
+          association_label: association_label,
+          association_label_singular: association_label.singularize,
+          association_name: association_name
+        )
+      end
 
       protected
 
@@ -124,6 +143,7 @@ module RailsAdmin
         fail(ParentModelNotFound) unless (@parent_abstract_model = RailsAdmin::AbstractModel.new(@parent_model_name))
         fail(ParentModelNotFound) if (@parent_model_config = @parent_abstract_model.config).excluded?
         fail(HasManyConfigNotFound) unless  (@has_many_association_config = @parent_model_config.nested_has_many_relationships[@association_name]).present?
+        @association_label = capitalize_first_letter(@has_many_association_config.label || @association_name.to_s.humanize )
         @parent_properties = @parent_abstract_model.properties
       end
 

@@ -21,7 +21,7 @@ module RailsAdmin
 
         # View partial name (called in default :controller block)
         register_instance_option :template_name do
-          :edit
+          :edit_nested
         end
 
         # For Cancan and the like
