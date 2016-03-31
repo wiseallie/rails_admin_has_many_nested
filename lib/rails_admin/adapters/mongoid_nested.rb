@@ -4,11 +4,11 @@ module RailsAdmin
     module MongoidNested
 
       def new(params = {})
-        AbstractObject.new(parent_object.send(:association_name).new(params))
+        ::RailsAdmin::Adapters::Mongoid::AbstractObject.new(parent_object.send(association_name).new(params))
       end
 
       def get(id)
-        AbstractObject.new(parent_object.send(:association_name).find(id))
+        ::RailsAdmin::Adapters::Mongoid::AbstractObject.new(parent_object.send(association_name).find(id))
       rescue => e
         raise e if %w(
           Mongoid::Errors::DocumentNotFound
@@ -19,7 +19,7 @@ module RailsAdmin
       end
 
       def scoped
-        parent_object.send(:association_name)
+        parent_object.send(association_name)
       end
     end
   end

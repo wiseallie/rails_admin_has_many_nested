@@ -20,8 +20,9 @@ module RailsAdmin
                 association_name: association_name
               }
               href = url_for(url_options)
+              is_active = (@action.association_nested_action? && current_action?(action) && association_name.to_s == params[:association_name].to_s) || (!@action.association_nested_action? && association_name.to_s == params[:association_name].to_s)
               link_collection << %(
-                <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if current_action?(action) && association_name.to_s == params[:association_name].to_s}">
+                <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if is_active}">
                   <a class="#{action.pjax? ? 'pjax' : ''}" href="#{href}">
                     <i class="#{options[:link_icon]||action.link_icon}"></i>
                     <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
@@ -53,8 +54,9 @@ module RailsAdmin
                 pjax_nested: true
               }
               href = url_for(url_options)
+              is_active = (@action.association_nested_action? && current_action?(action) && association_name.to_s == params[:association_name].to_s) || (!@action.association_nested_action?  && association_name.to_s == params[:association_name].to_s)
               link_collection << %(
-                <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if current_action?(action) && association_name.to_s == params[:association_name].to_s}">
+                <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if is_active}">
                   <a class="#{action.pjax? ? 'pjax' : ''}" href="#{href}">
                     <i class="#{options[:link_icon]||action.link_icon}"></i>
                     <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
@@ -77,7 +79,7 @@ module RailsAdmin
               parent_model_name: parent_abstract_model.try(:to_param),
               parent_object_id: parent_object.try(:id),
               association_name: association_name,
-              id: (object.try(:persisted?) && parent_object.try(:id) || nil),
+              id: object.try(:id).presence
             }
             href = url_for(url_options)
             wording = wording_for(:menu, action)
@@ -91,6 +93,47 @@ module RailsAdmin
           )
         end.flatten.join.html_safe
       end
+
+      def index_nested_menu_for(parent_abstract_model, parent_object, association_name, abstract_model = nil, object = nil, only_icon = false) # perf matters here (no action view trickery)
+        actions =  actions(:all, abstract_model, object).select { |a| a.action_name.to_s == "index_nested" && a.http_methods.include?(:get)}
+        actions.collect do |action|
+            url_options = {
+              action: action.action_name,
+              controller: 'rails_admin/main',
+              parent_model_name: parent_abstract_model.try(:to_param),
+              parent_object_id: parent_object.try(:id),
+              association_name: association_name,
+              id: object.try(:id).presence
+            }
+            href = url_for(url_options)
+            wording = wording_for(:menu, action)
+          %(
+            <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_has_many_nested_collection_link #{'active' if current_action?(action) && association_name == params[:association_name]}">
+              <a class="#{action.pjax? ? 'pjax' : ''}" href="#{href}">
+                <i class="#{action.link_icon}"></i>
+                <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
+              </a>
+            </li>
+          )
+        end.flatten.join.html_safe
+      end
+
+      def index_menu_for(abstract_model = nil, object = nil, only_icon = false) # perf matters here (no action view trickery)
+
+        actions = actions(:all, abstract_model, object).select { |a| a.action_name.to_s == "index"  && a.http_methods.include?(:get) }
+        actions.collect do |action|
+          wording = wording_for(:menu, action)
+          %(
+            <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_collection_link #{'active' if current_action?(action)}">
+              <a class="#{action.pjax? ? 'pjax' : ''}" href="#{url_for(action: action.action_name, controller: 'rails_admin/main', model_name: abstract_model.try(:to_param), id: (object.try(:persisted?) && object.try(:id) || nil))}">
+                <i class="#{action.link_icon}"></i>
+                <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
+              </a>
+            </li>
+          )
+        end.join.html_safe
+      end
+
 
       #(key, abstract_model = nil, object = nil)
       def parent_breadcrumb(action = @action, _acc = [])

@@ -1,9 +1,0 @@
-:ruby
-  id = Time.now.to_i + rand(100000000)
-- if params[:nested_url_options]
-  %div{'data-pjax-container' => '1', 'id' => "#{id}"}
-    %a.pjax{href: url_for(params[:nested_url_options]), 'data-pjax-container' => "##{id}", id: "link-#{id}" }
-  :javascript
-    jQuery(function($) {
-      $("#link-#{id}").click()
-    });

@@ -4,6 +4,8 @@ module RailsAdmin
       class ParentModelNotFound < ::StandardError ;end
       class ParentObjectNotFound < ::StandardError; end
       class HasManyConfigNotFound < ::StandardError; end
+      class NestedModelNotFound < ::StandardError ;end
+      class NestedObjectNotFound < ::StandardError ;end
 
       extend ActiveSupport::Concern
 
@@ -21,30 +23,42 @@ module RailsAdmin
         )
 
         def initialize_has_many_nested
-          prepend_before_action :get_nested_object, only: RailsAdmin::Config::Actions.all.select(&:has_many_nested_member).collect(&:action_name)
-          prepend_before_action :get_parent_model_and_object_and_nested_model, only: RailsAdmin::Config::Actions.all.select(&:has_many_nested_collection).collect(&:action_name)
+          before_action :get_parent_model_and_object_and_nested_model, only: RailsAdmin::Config::Actions.all.select(&:has_many_nested_collection).collect(&:action_name)
+          before_action :get_nested_object, only: RailsAdmin::Config::Actions.all.select(&:has_many_nested_member).collect(&:action_name)
           # Does not behave well when there are other before filters
           # because it uses except
           # before_filter :get_model, except: RailsAdmin::Config::Actions.all(:root).collect(&:action_name)
-          skip_before_filter :get_model
-          prepend_before_action :_get_model, only: [RailsAdmin::Config::Actions.all(:collection).collect(&:action_name), RailsAdmin::Config::Actions.all(:member).collect(&:action_name)].flatten
+          skip_before_action :get_model
+          before_action :_get_model, only: [RailsAdmin::Config::Actions.all(:collection).collect(&:action_name), RailsAdmin::Config::Actions.all(:member).collect(&:action_name)].flatten
 
           rescue_from ParentModelNotFound do
             flash[:error] = I18n.t('admin.flash.parent_model_not_found', parent_model: @parent_model_name)
             params[:action] = 'dashboard'
-            dashboard
+            redirect_to url_for(params)
           end
 
           rescue_from ParentObjectNotFound do
             flash[:error] = I18n.t('admin.flash.parent_object_not_found', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id])
             params[:action] = 'dashboard'
-            dashboard
+            redirect_to url_for(params)
           end
 
           rescue_from HasManyConfigNotFound do
             flash[:error] = I18n.t('admin.flash.has_many_association_config', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id], association_name: params[:association_name])
             params[:action] = 'dashboard'
+            redirect_to url_for(params)
+          end
+
+          rescue_from NestedModelNotFound do
+            flash[:error] = I18n.t('admin.flash.nested_model_not_found', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id], association_name: params[:association_name], nested_model: params[:nested_model_name])
+            redirect_to url_for(params)
             dashboard
+          end
+
+          rescue_from NestedObjectNotFound do
+            flash[:error] = I18n.t('admin.flash.nested_object_not_found', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id], association_name: params[:association_name], nested_model: params[:nested_model_name], nested_object_id: params[:id])
+            params[:action] = 'index_nested'
+            index_nested
           end
 
           ClassMethods::ATTR_ACCESSORS_TO_DEFINE.each do |a|
@@ -119,15 +133,15 @@ module RailsAdmin
 
       def get_nested_model
         @model_name = @nested_model_name = @has_many_association_config.association.options[:class_name]
-        fail(RailsAdmin::ModelNotFound) unless (@abstract_model = @nested_abstract_model =  RailsAdmin::NestedAbstractModel.new(@nested_model_name, @parent_object, @association_name))
-        fail(RailsAdmin::ModelNotFound) if (@model_config = @nested_model_config = @nested_abstract_model.config).excluded?
+        params[:model_name] = params[:nested_model_name] = to_model_param(@model_name)
+        fail(NestedModelNotFound) unless (@abstract_model = @nested_abstract_model =  RailsAdmin::NestedAbstractModel.new(@nested_model_name, @parent_object, @association_name))
+        fail(NestedModelNotFound) if (@model_config = @nested_model_config = @nested_abstract_model.config).excluded?
         @properties = @nested_properties =  @nested_abstract_model.properties
-        params[:model_name] = params['model_name'] = to_model_param(@model_name )
       end
 
       def get_nested_object
         get_parent_model_and_object_and_nested_model
-        fail(RailsAdmin::ObjectNotFound) unless (@object = @nested_object = @nested_abstract_model.get(params[:id]))
+        fail(NestedObjectNotFound) unless (@object = @nested_object = @nested_abstract_model.get(params[:id]))
       end
 
       private

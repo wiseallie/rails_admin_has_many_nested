@@ -18,6 +18,11 @@ module RailsAdmin
           [:index_nested, bindings[:controller].try(:nested_abstract_model), bindings[:controller].try(:nested_object)]
         end
 
+        # View partial name (called in default :controller block)
+        register_instance_option :template_name do
+          :delete
+        end
+
       end
     end
   end
