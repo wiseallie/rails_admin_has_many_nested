@@ -8,7 +8,7 @@ module RailsAdmin
         if parent == :member
           action = RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object, abstract_model:abstract_model , object: object))
           # actions =  actions(:all, abstract_model, object).select { |a| a.association_nested_action? && a.http_methods.include?(:get)}
-          [action].collect do |action|
+          [action].compact.collect do |action|
             link_collection = []
             wording = wording_for(:menu, action)
             abstract_model.config.nested_has_many_relationships.each do |association_name, options|
@@ -42,7 +42,7 @@ module RailsAdmin
         if parent == :has_many_nested_member
           action = RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object))
           # actions =  actions(:all, abstract_model, object).select { |a| a.association_nested_action? && a.http_methods.include?(:get)}
-          [action].collect do |action|
+          [action].compact.collect do |action|
             link_collection = []
             wording = wording_for(:menu, action)
             abstract_model.config.nested_has_many_relationships.each do |association_name, options|
