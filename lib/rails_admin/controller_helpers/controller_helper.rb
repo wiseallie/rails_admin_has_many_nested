@@ -24,7 +24,7 @@ module RailsAdmin
               is_active = @association_name == association_name
               link_collection << %(
                 <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if is_active}">
-                  <a class="#{action.pjax? ? 'pjax' : ''}" href="#{href}">
+                  <a class="#{action.pjax? ? 'pjax' : ''}"  #{action.pjax? ? 'data-pjax-enabled' : ''}  href="#{href}">
                     <i class="#{options[:link_icon]||action.link_icon}"></i>
                     <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
                   </a>
@@ -53,13 +53,14 @@ module RailsAdmin
                 parent_model_name: parent_abstract_model.try(:to_param),
                 parent_object_id: parent_object.try(:id),
                 association_name: association_name,
-                pjax_nested: true
+                pjax_nested: true,
+                pjax_nested_list: true
               }
               href = url_for(url_options)
               is_active = @association_name == association_name
               link_collection << %(
                 <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if is_active}">
-                  <a class="#{action.pjax? ? 'pjax' : ''}" href="#{href}" >
+                  <a class="#{action.pjax? ? 'pjax' : ''}" data-pjax-nested='true' data-pjax-nested-list-link='true'  data-pjax-container="##{second_random_id}" href="#{href}" >
                     <i class="#{options[:link_icon]||action.link_icon}"></i>
                     <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
                   </a>
@@ -114,7 +115,7 @@ module RailsAdmin
             is_active = parent_abstract_model ? current_nested_action?(action, association_name, nested_abstract_model, nested_object) : current_action?(action, nested_abstract_model, nested_object)
           %(
             <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_has_many_nested_collection_link #{'active' if is_active}">
-              <a class="#{action.pjax? ? 'pjax' : ''}" href="#{href}">
+              <a  class="#{action.pjax? ? 'pjax' : ''}" href="#{href}">
                 <i class="#{action.link_icon}"></i>
                 <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
               </a>
@@ -155,7 +156,7 @@ module RailsAdmin
 
         }.with_indifferent_access.merge(options)
 
-        content_tag(options[:container_tag], class: 'breadcrumb') do
+        c = content_tag(options[:container_tag], class: 'breadcrumb') do
           parent_actions.collect do |a|
             pam = a.send(:eval, 'bindings[:parent_abstract_model]')
             po = a.send(:eval, 'bindings[:parent_object]')
@@ -181,6 +182,7 @@ module RailsAdmin
             end
           end.reverse.join.html_safe
         end
+        c
       end
 
       def nested_breadcrumb(action = @action, _acc = [], options = {})
@@ -198,7 +200,7 @@ module RailsAdmin
 
         }.with_indifferent_access.merge(options)
 
-        content_tag(options[:container_tag], class: 'breadcrumb') do
+        c = content_tag(options[:container_tag], class: 'breadcrumb') do
           parent_actions.collect do |a|
             pam = a.send(:eval, 'bindings[:parent_abstract_model]')
             po = a.send(:eval, 'bindings[:parent_object]')
@@ -224,6 +226,7 @@ module RailsAdmin
             end
           end.reverse.join.html_safe
         end
+        c
       end
 
       def current_nested_action?(action, association_name = @association_name, nested_abstract_model= @nested_abstract_model, nested_object = @nested_object)
@@ -251,6 +254,11 @@ module RailsAdmin
       def random_id
         @random_id ||= Time.now.to_i + rand(10000)
       end
+
+      def second_random_id
+        @second_random_id ||= Time.now.to_i + rand(10000)
+      end
+
 
     end #end  ControllerHelper
   end #end  ControllerHelpers

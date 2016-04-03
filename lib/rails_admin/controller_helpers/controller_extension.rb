@@ -11,7 +11,6 @@ module RailsAdmin
 
       def self.included(base)
         base.send(:initialize_has_many_nested)
-        base.layout(:get_new_layout)
       end
 
       module ClassMethods
@@ -23,6 +22,7 @@ module RailsAdmin
         )
 
         def initialize_has_many_nested
+          before_action :set_pjax_header
           before_action :get_parent_model_and_object_and_nested_model, only: RailsAdmin::Config::Actions.all.select(&:has_many_nested_collection).collect(&:action_name)
           before_action :get_nested_object, only: RailsAdmin::Config::Actions.all.select(&:has_many_nested_member).collect(&:action_name)
           # Does not behave well when there are other before filters
@@ -33,27 +33,27 @@ module RailsAdmin
 
           rescue_from ParentModelNotFound do
             flash[:error] = I18n.t('admin.flash.parent_model_not_found', parent_model: @parent_model_name)
-            render :error_nested
+            render :error_nested, layout: false
           end
 
           rescue_from ParentObjectNotFound do
             flash[:error] = I18n.t('admin.flash.parent_object_not_found', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id])
-            render :error_nested
+            render :error_nested, layout: false
           end
 
           rescue_from HasManyConfigNotFound do
             flash[:error] = I18n.t('admin.flash.has_many_association_config', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id], association_name: params[:association_name])
-            render :error_nested
+            render :error_nested, layout: false
           end
 
           rescue_from NestedModelNotFound do
             flash[:error] = I18n.t('admin.flash.nested_model_not_found', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id], association_name: params[:association_name], nested_model: params[:nested_model_name])
-            render :error_nested
+            render :error_nested, layout: false
           end
 
           rescue_from NestedObjectNotFound do
             flash[:error] = I18n.t('admin.flash.nested_object_not_found', parent_model: @parent_model_name, parent_object_id: params[:parent_object_id], association_name: params[:association_name], nested_model: params[:nested_model_name], nested_object_id: params[:id])
-            render :error_nested
+            render :error_nested, layout: false
           end
 
           ClassMethods::ATTR_ACCESSORS_TO_DEFINE.each do |a|
@@ -118,6 +118,12 @@ module RailsAdmin
 
       protected
 
+      def set_pjax_header
+        if params[:pjax_nested] || request.xhr?
+          request.headers['X-PJAX'] = true
+        end
+      end
+
       # only for the purpose of allowing other before filters to go through
       def _get_model
         get_model
@@ -164,11 +170,6 @@ module RailsAdmin
         fail(NestedObjectNotFound) unless (@object = @nested_object = @nested_abstract_model.get(params[:id]))
       end
 
-      private
-
-      def get_new_layout
-        "rails_admin/#{request.headers['X-PJAX'] || params['pjax'] ? 'pjax' : 'application'}"
-      end
     end #end  ControllerExtension
   end #end  ControllerHelpers
 end # RailsAdmin

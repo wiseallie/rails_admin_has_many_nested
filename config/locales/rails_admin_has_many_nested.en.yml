@@ -75,6 +75,7 @@ en:
         link: "Export found %{model_label_plural}"
         bulk_link: "Export selected %{model_label_plural}"
         done: "exported"
+        title_nested: "Export %{parent_object_label}'s %{association_label}"
         menu_nested: "Export"
         breadcrumb_nested: "Export"
         link_nested: "Export  %{association_label}"
