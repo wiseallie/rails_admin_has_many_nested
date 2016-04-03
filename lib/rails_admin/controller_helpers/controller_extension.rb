@@ -6,6 +6,12 @@ module RailsAdmin
       class HasManyConfigNotFound < ::StandardError; end
       class NestedModelNotFound < ::StandardError ;end
       class NestedObjectNotFound < ::StandardError ;end
+      ATTR_ACCESSORS_TO_DEFINE = %w(
+      parent_object parent_model parent_model_name parent_abstract_model parent_model_config  parent_properties
+      object model model_name  abstract_model model_config  properties
+      nested_object nested_model nested_model_name nested_abstract_model nested_model_config  nested_properties
+      has_many_association_config association_name association_label
+      )
 
       extend ActiveSupport::Concern
 
@@ -14,12 +20,6 @@ module RailsAdmin
       end
 
       module ClassMethods
-        ATTR_ACCESSORS_TO_DEFINE = %w(
-        parent_object parent_model parent_model_name parent_abstract_model parent_model_config  parent_properties
-        object model model_name  abstract_model model_config  properties
-        nested_object nested_model nested_model_name nested_abstract_model nested_model_config  nested_properties
-        has_many_association_config association_name association_label
-        )
 
         def initialize_has_many_nested
           before_action :set_pjax_header
@@ -56,21 +56,25 @@ module RailsAdmin
             render :error_nested, layout: false
           end
 
-          ClassMethods::ATTR_ACCESSORS_TO_DEFINE.each do |a|
-            define_method a.to_sym do
-              instance_variable_get("@#{a}")
-            end
+          helper_method *ATTR_ACCESSORS_TO_DEFINE
+          hide_action *ATTR_ACCESSORS_TO_DEFINE
 
-            define_method "#{a}=(v)".to_sym do |v|
-              instance_variable_set("@#{a}", v)
-            end
-            helper_method a.to_sym
-            hide_action a.to_sym
-          end
           helper_method :nested_bindings, :nested_wording_for
 
         end
       end
+
+
+      ATTR_ACCESSORS_TO_DEFINE.each do |a|
+        define_method a.to_sym do
+          instance_variable_get("@#{a}")
+        end
+
+        define_method "#{a}=(v)".to_sym do |v|
+          instance_variable_set("@#{a}", v)
+        end
+      end
+
 
       # Try and add more bindings to the current action
       # a controller action is called with
@@ -90,7 +94,7 @@ module RailsAdmin
         bindings_hash = {
           controller: self, view: view_context, action: @action
         }.with_indifferent_access
-        RailsAdmin::ControllerHelpers::ControllerExtension::ClassMethods::ATTR_ACCESSORS_TO_DEFINE.each{|k| bindings_hash[k.to_sym] = send(k)}
+        RailsAdmin::ControllerHelpers::ControllerExtension::ATTR_ACCESSORS_TO_DEFINE.each{|k| bindings_hash[k.to_sym] = send(k)}
         bindings_hash.merge!(options || {})
         bindings_hash
       end
