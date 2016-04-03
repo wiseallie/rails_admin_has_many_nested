@@ -161,7 +161,12 @@ module RailsAdmin
         @model_name = @nested_model_name = @has_many_association_config.association.options[:class_name]
         params[:model_name] = params[:nested_model_name] = to_model_param(@model_name)
         fail(NestedModelNotFound) unless (@abstract_model = @nested_abstract_model =  RailsAdmin::NestedAbstractModel.new(@nested_model_name, @parent_object, @association_name))
-        fail(NestedModelNotFound) if (@model_config = @nested_model_config = @nested_abstract_model.config).excluded?
+        @nested_model_config = @nested_abstract_model.config
+        # VERY IMPORTANT
+        @nested_model_config.instance_variable_set("@abstract_model", @nested_abstract_model)
+        @model_config  = @nested_model_config
+        fail(NestedModelNotFound) if @nested_model_config.excluded?
+        # overwrite the cached abstract  model config abstract mode  cached by  @abstract_model.config
         @properties = @nested_properties =  @nested_abstract_model.properties
       end
 

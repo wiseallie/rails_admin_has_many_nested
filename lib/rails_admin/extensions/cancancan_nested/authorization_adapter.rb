@@ -1,6 +1,6 @@
 module RailsAdmin
   module Extensions
-    module CanCanCan
+    module CanCanCanNested
       # This adapter is for the CanCanCan[https://github.com/CanCanCommunity/cancancan] authorization library.
       class AuthorizationAdapter
         # See the +authorize_with+ config method for where the initialization happens.
@@ -32,8 +32,8 @@ module RailsAdmin
         # and bulk_delete/destroy actions and should return a scope which limits the records
         # to those which the user can perform the given action on.
         def query(action, abstract_model)
-          if @controller.parent_model_object.present? && @controller.association_name.present?
-            @controller.parent_model_object.send(@controller.association_name).accessible_by(@controller.current_ability, action)
+          if @controller.parent_object.present? && @controller.association_name.present?
+            @controller.parent_object.send(@controller.association_name).accessible_by(@controller.current_ability, action)
           else
             abstract_model.model.accessible_by(@controller.current_ability, action)
           end
@@ -42,7 +42,7 @@ module RailsAdmin
         # This is called in the new/create actions to determine the initial attributes for new
         # records. It should return a hash of attributes which match what the user
         # is authorized to create.
-        def attributes_for(action, abstract_model, parent_model_object = nil, association_name = nil )
+        def attributes_for(action, abstract_model, parent_object = nil, association_name = nil )
           @controller.current_ability.attributes_for(action, abstract_model && abstract_model.model)
         end
 

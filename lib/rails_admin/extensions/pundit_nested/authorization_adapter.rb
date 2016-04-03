@@ -1,14 +1,17 @@
 module RailsAdmin
   module Extensions
-    module Pundit
+    module PunditNested
       # This adapter is for the Pundit[https://github.com/elabs/pundit] authorization library.
       # You can create another adapter for different authorization behavior, just be certain it
       # responds to each of the public methods here.
       class AuthorizationAdapter
+        attr_reader :parent_object, :association_name
         # See the +authorize_with+ config method for where the initialization happens.
         def initialize(controller)
           @controller = controller
           @controller.extend ControllerExtension
+          @parent_object = @controller.parent_object
+          @association_name = @controller.association_name
         end
 
         # This method is called in every controller action and should raise an exception
@@ -34,17 +37,24 @@ module RailsAdmin
         # and bulk_delete/destroy actions and should return a scope which limits the records
         # to those which the user can perform the given action on.
         def query(_action, abstract_model)
-          if parent_model_object.present? && association_name.present?
-            @controller.policy_scope(parent_model_object.send(association_name))
-          else
-            @controller.policy_scope(abstract_model.model.all)
+          begin
+            p_scope = begin
+              if parent_object.present? && association_name.present?
+                @controller.policy_scope!(@controller.send(:pundit_user), parent_object.send(association_name))
+              else
+                @controller.policy_scope!(@controller.send(:pundit_user), abstract_model.model.all)
+              end
+            end
+          rescue ::Pundit::NotDefinedError
+            p_scope = begin
+              if parent_object.present? && association_name.present?
+                parent_object.send(association_name)
+              else
+                abstract_model.model.all
+              end
+            end
           end
-        rescue ::Pundit::NotDefinedError
-          if parent_model_object.present? && association_name.present?
-            parent_model_object.send(association_name)
-          else
-            abstract_model.model.all
-          end
+          p_scope
         end
 
         # This is called in the new/create actions to determine the initial attributes for new
@@ -65,7 +75,7 @@ module RailsAdmin
           # @param record [Object] the object we're retrieving the policy scope for
           # @return [Scope{#resolve}, nil] instance of scope class which can resolve to a scope
           def policy_scope(user, scope)
-            policy_scope = PolicyFinder.new(scope).scope
+            policy_scope = ::Pundit::PolicyFinder.new(scope).scope
             policy_scope.new(user, scope, self).resolve if policy_scope
           end
 
@@ -77,7 +87,7 @@ module RailsAdmin
           # @raise [NotDefinedError] if the policy scope cannot be found
           # @return [Scope{#resolve}] instance of scope class which can resolve to a scope
           def policy_scope!(user, scope)
-            PolicyFinder.new(scope).scope!.new(user, scope, self).resolve
+            ::Pundit::PolicyFinder.new(scope).scope!.new(user, scope, self).resolve
           end
 
           # Retrieves the policy for the given record.
@@ -87,7 +97,7 @@ module RailsAdmin
           # @param record [Object] the object we're retrieving the policy for
           # @return [Object, nil] instance of policy class with query methods
           def policy(user, record)
-            policy = PolicyFinder.new(record).policy
+            policy = ::Pundit::PolicyFinder.new(record).policy
             policy.new(user, record, self) if policy
           end
 
@@ -99,7 +109,7 @@ module RailsAdmin
           # @raise [NotDefinedError] if the policy cannot be found
           # @return [Object] instance of policy class with query methods
           def policy!(user, record)
-            PolicyFinder.new(record).policy!.new(user, record, self)
+            ::Pundit::PolicyFinder.new(record).policy!.new(user, record, self)
           end
         end
 
@@ -107,7 +117,7 @@ module RailsAdmin
 
 
         def policy(record)
-          @controller.policy(record)
+          @controller.policy(@controller.send(:pundit_user), record)
         rescue ::Pundit::NotDefinedError
           ::ApplicationPolicy.new(@controller.send(:pundit_user), record, @controller)
         end

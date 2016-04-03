@@ -31,7 +31,7 @@ module RailsAdmin
         }.with_indifferent_access.merge(options||{})
         options[:association] = association
         options[:nested_model_name] = association.options[:class_name]
-        raise ModelNotFound unless (nested_abstract_model = RailsAdmin::NestedAbstractModel.new(options[:nested_model_name], OpenStruct.new, association_name))
+        raise ModelNotFound unless (nested_abstract_model = RailsAdmin::NestedAbstractModel.new(options[:nested_model_name], "NOT INITIALIZED YET", association_name))
         raise ModelNotFound if (nested_model_config = nested_abstract_model.config).excluded?
         nested_has_many_relationships[association_name] = OpenStruct.new(options)
       end
