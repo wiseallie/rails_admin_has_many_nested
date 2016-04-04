@@ -26,11 +26,6 @@ module RailsAdmin
           :index_nested
         end
 
-        # For Cancan and the like
-        register_instance_option :authorization_key do
-          :index
-        end
-
       end
     end
   end

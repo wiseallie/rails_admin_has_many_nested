@@ -23,11 +23,6 @@ module RailsAdmin
           :new_nested
         end
 
-        # For Cancan and the like
-        register_instance_option :authorization_key do
-          :new
-        end
-
       end
     end
   end

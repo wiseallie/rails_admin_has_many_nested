@@ -23,10 +23,6 @@ module RailsAdmin
           :show_nested
         end
 
-        # For Cancan and the like
-        register_instance_option :authorization_key do
-          :show
-        end
 
       end
     end

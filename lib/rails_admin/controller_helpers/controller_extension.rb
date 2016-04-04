@@ -60,7 +60,6 @@ module RailsAdmin
           hide_action *ATTR_ACCESSORS_TO_DEFINE
 
           helper_method :nested_bindings, :nested_wording_for
-
         end
       end
 
@@ -94,7 +93,7 @@ module RailsAdmin
         bindings_hash = {
           controller: self, view: view_context, action: @action
         }.with_indifferent_access
-        RailsAdmin::ControllerHelpers::ControllerExtension::ATTR_ACCESSORS_TO_DEFINE.each{|k| bindings_hash[k.to_sym] = send(k)}
+        ATTR_ACCESSORS_TO_DEFINE.each{|k| bindings_hash[k.to_sym] = send(k)}
         bindings_hash.merge!(options || {})
         bindings_hash
       end
