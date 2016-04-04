@@ -9,7 +9,7 @@ module RailsAdmin
           false
         end
 
-        register_instance_option :has_many_nested_collection do
+        register_instance_option :nested_collection do
           true
         end
 

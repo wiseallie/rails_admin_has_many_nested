@@ -10,7 +10,7 @@ module RailsAdmin
           false
         end
 
-        register_instance_option :has_many_nested_member do
+        register_instance_option :nested_member do
           true
         end
       end

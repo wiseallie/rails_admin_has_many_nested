@@ -23,8 +23,8 @@ module RailsAdmin
 
         def initialize_has_many_nested
           before_action :set_pjax_header
-          before_action :get_parent_model_and_object_and_nested_model, only: RailsAdmin::Config::Actions.all.select(&:has_many_nested_collection).collect(&:action_name)
-          before_action :get_nested_object, only: RailsAdmin::Config::Actions.all.select(&:has_many_nested_member).collect(&:action_name)
+          before_action :get_parent_model_and_object_and_nested_model, only: RailsAdmin::Config::Actions.all.select(&:nested_collection).collect(&:action_name)
+          before_action :get_nested_object, only: RailsAdmin::Config::Actions.all.select(&:nested_member).collect(&:action_name)
           # Does not behave well when there are other before filters
           # because it uses except
           # before_filter :get_model, except: RailsAdmin::Config::Actions.all(:root).collect(&:action_name)
@@ -82,7 +82,7 @@ module RailsAdmin
       def instance_eval(&block)
         if @action && !@action.bindings[:nested_controller_bindings_set]
           @action = @action.with(nested_bindings({controller: self, nested_controller_bindings_set: true}))
-          if @action.has_many_nested_collection || @action.has_many_nested_member
+          if @action.nested_collection || @action.nested_member
             @page_name = nested_wording_for(:title)
           end
         end

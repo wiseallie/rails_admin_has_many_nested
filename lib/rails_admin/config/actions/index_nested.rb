@@ -5,7 +5,7 @@ module RailsAdmin
       class IndexNested < Index
         RailsAdmin::Config::Actions.register(self)
 
-        register_instance_option :association_nested_action? do
+        register_instance_option :association_nested_action do
           true
         end
 
@@ -13,7 +13,7 @@ module RailsAdmin
           false
         end
 
-        register_instance_option :has_many_nested_collection do
+        register_instance_option :nested_collection do
           true
         end
 

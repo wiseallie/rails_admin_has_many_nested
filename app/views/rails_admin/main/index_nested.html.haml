@@ -101,7 +101,7 @@
             - if @other_right_link ||= other_right && index_nested_path(params.merge(set: (params[:set].to_i + 1)))
               %td.other.right= link_to "...", @other_right_link, class: 'pjax'
             %td.last.links
-              %ul.inline.list-inline= nested_menu_for :has_many_nested_member , @parent_abstract_model, @parent_object, @association_name, @nested_abstract_model, object, true
+              %ul.inline.list-inline= nested_menu_for :nested_member , @parent_abstract_model, @parent_object, @association_name, @nested_abstract_model, object, true
     - if @objects.respond_to?(:total_count)
       - total_count = @objects.total_count.to_i
       .row

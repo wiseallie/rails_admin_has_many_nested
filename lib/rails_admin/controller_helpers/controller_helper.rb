@@ -7,7 +7,6 @@ module RailsAdmin
       def menu_for_associations(parent, abstract_model = nil, object = nil, only_icon = false) # perf matters here (no action view trickery)
         if parent == :member
           action = RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object, abstract_model:abstract_model , object: object))
-          # actions =  actions(:all, abstract_model, object).select { |a| a.association_nested_action? && a.http_methods.include?(:get)}
           [action].compact.collect do |action|
             link_collection = []
             wording = wording_for(:menu, action)
@@ -36,12 +35,11 @@ module RailsAdmin
         end
       end
 
-      # parent => :has_many_nested_collection, :has_many_nested_member
-      # we only worry about :has_many_nested_member actions and fetch actions that have association_nested_action == true
+      # parent => :nested_collection, :nested_member
+      # we only worry about :nested_member actions and fetch actions that have association_nested_action == true
       def nested_menu_for_associations(parent, parent_abstract_model, parent_object, only_icon = false) # perf matters here (no action view trickery)
-        if parent == :has_many_nested_member
+        if parent == :nested_member
           action = RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object))
-          # actions =  actions(:all, abstract_model, object).select { |a| a.association_nested_action? && a.http_methods.include?(:get)}
           [action].compact.collect do |action|
             link_collection = []
             wording = wording_for(:menu, action)
@@ -72,9 +70,9 @@ module RailsAdmin
         end
       end
 
-      # parent => :has_many_nested_collection, :has_many_nested_member
+      # parent => :nested_collection, :nested_member
       def nested_menu_for(parent, parent_abstract_model, parent_object, association_name, nested_abstract_model = nil, nested_object = nil, only_icon = false) # perf matters here (no action view trickery)
-        actions =  actions(:all, nested_abstract_model, nested_object).select { |a| a.send(parent) && a.http_methods.include?(:get)}
+        actions =  actions(parent, nested_abstract_model, nested_object).select { |a| a.http_methods.include?(:get)}
         actions.collect do |action|
             url_options = {
               action: action.action_name,
@@ -100,7 +98,6 @@ module RailsAdmin
 
       def index_nested_menu_for(parent_abstract_model, parent_object, association_name, nested_abstract_model = nil, nested_object = nil, only_icon = false) # perf matters here (no action view trickery)
         action = RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object))
-        # actions(:all, nested_abstract_model, nested_object).select { |a| a.action_name.to_s == "index_nested" && a.http_methods.include?(:get)}
         [action].collect do |action|
             url_options = {
               action: action.action_name,
@@ -114,7 +111,7 @@ module RailsAdmin
             wording = wording_for(:menu, action)
             is_active = parent_abstract_model ? current_nested_action?(action, association_name, nested_abstract_model, nested_object) : current_action?(action, nested_abstract_model, nested_object)
           %(
-            <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_has_many_nested_collection_link #{'active' if is_active}">
+            <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_nested_collection_link #{'active' if is_active}">
               <a  class="#{action.pjax? ? 'pjax' : ''}" href="#{href}">
                 <i class="#{action.link_icon}"></i>
                 <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
@@ -126,7 +123,6 @@ module RailsAdmin
 
       def index_menu_for(abstract_model = nil, object = nil, only_icon = false) # perf matters here (no action view trickery)
         action = RailsAdmin::Config::Actions.find(:index, nested_bindings(abstract_model: abstract_model))
-        # actions = actions(:all, abstract_model, object).select { |a| a.action_name.to_s == "index"  && a.http_methods.include?(:get) }
         [action].collect do |action|
           wording = wording_for(:menu, action)
           %(
@@ -143,7 +139,7 @@ module RailsAdmin
       #(key, abstract_model = nil, object = nil)
       def parent_breadcrumb(action = @action, _acc = [], options = {})
         begin
-          (parent_actions ||= []) << action unless action.has_many_nested_member
+          (parent_actions ||= []) << action unless action.nested_member
         end while action.breadcrumb_parent && (action = action(*action.breadcrumb_parent)) # rubocop:disable Loop
         options = {
           container_tag: 'ol',
@@ -237,7 +233,7 @@ module RailsAdmin
       end
 
       def nested_bulk_menu(abstract_model = @abstract_model)
-        actions = actions(:all, abstract_model).select{|x| x.bulkable && (x.has_many_nested_collection || x.has_many_nested_member) }
+        actions = actions(:nested_bulkable, abstract_model)
         return '' if actions.empty?
         content_tag :li, class: 'dropdown', style: 'float:right' do
           content_tag(:a, class: 'dropdown-toggle', data: {toggle: 'dropdown'}, href: '#') { t('admin.misc.bulk_menu_title').html_safe + ' ' + '<b class="caret"></b>'.html_safe } +

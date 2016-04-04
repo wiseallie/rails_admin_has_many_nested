@@ -10,9 +10,10 @@ module RailsAdmin
           false
         end
 
-        register_instance_option :has_many_nested_member do
+        register_instance_option :nested_member do
           true
         end
+
 
         register_instance_option :breadcrumb_parent do
           [:index_nested, bindings[:controller].try(:nested_abstract_model), bindings[:controller].try(:nested_object)]
