@@ -10,9 +10,11 @@ module RailsAdminHasManyNested
     end
 
     def load_extensions_for_has_many_nested
-      unless RailsAdmin::ApplicationController.included_modules.include?(RailsAdmin::Controllers::Concerns::ApplicationConcern)
-        RailsAdmin::ApplicationController.send(:include, RailsAdmin::Controllers::Concerns::ApplicationConcern)
-      end
+      ActionController::Base.send :include ,  RailsAdmin::Controllers::Concerns::ApplicationConcern
+
+      # unless RailsAdmin::ApplicationController.included_modules.include?(RailsAdmin::Controllers::Concerns::ApplicationConcern)
+        # RailsAdmin::ApplicationController.send(:include, RailsAdmin::Controllers::Concerns::ApplicationConcern)
+      # end
     end
   end
 end

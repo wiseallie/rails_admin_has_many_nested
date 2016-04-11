@@ -5,11 +5,13 @@ module RailsAdminHasManyNested
     # we only worry about :member actions and fetch actions that have association_nested_action == true
     def menu_for_associations(parent, abstract_model = nil, object = nil, only_icon = false) # perf matters here (no action view trickery)
       if parent == :member
-        action = RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object, abstract_model:abstract_model , object: object))
-        [action].compact.collect do |action|
+        actions = [RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object, abstract_model:abstract_model , object: object))]
+        actions = actions.flatten.compact.select{|action| action.visible?}
+        actions.map do |action|
           link_collection = []
           wording = wording_for(:menu, action)
           abstract_model.config.nested_has_many_relationships.each do |association_name, options|
+            next unless options[:visible].call(self)
             wording = capitalize_first_letter(options[:label] || association_name)
             url_options = {
               action: action.action_name,
@@ -22,10 +24,10 @@ module RailsAdminHasManyNested
             is_active = @association_name == association_name
             link_collection << %(
             <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if is_active}">
-            <a class="#{action.pjax? ? 'pjax' : ''}"  #{action.pjax? ? 'data-pjax-enabled' : ''}  href="#{href}">
-            <i class="#{options[:link_icon]||action.link_icon}"></i>
-            <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
-            </a>
+              <a class="#{action.pjax? ? 'pjax' : ''}"  #{action.pjax? ? 'data-pjax-enabled' : ''}  href="#{href}">
+                <i class="#{options[:link_icon]||action.link_icon}"></i>
+                <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
+              </a>
             </li>
             )
           end
@@ -38,11 +40,13 @@ module RailsAdminHasManyNested
     # we only worry about :nested_member actions and fetch actions that have association_nested_action == true
     def nested_menu_for_associations(parent, parent_abstract_model, parent_object, only_icon = false) # perf matters here (no action view trickery)
       if parent == :nested_member
-        action = RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object))
-        [action].compact.collect do |action|
+        actions = [RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object))]
+        actions = actions.flatten.compact.select{|action| action.visible?}
+        actions.map do |action|
           link_collection = []
           wording = wording_for(:menu, action)
           abstract_model.config.nested_has_many_relationships.each do |association_name, options|
+            next unless options[:visible].call(self)
             wording = capitalize_first_letter(options[:label] || association_name)
             url_options = {
               action: action.action_name,

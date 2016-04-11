@@ -27,7 +27,7 @@ module RailsAdmin
         options = {
           label: association_name.to_s.humanize,
           link_icon: 'link fa fa-link',
-          pjax: true
+          visible: ->(view){ true }
         }.with_indifferent_access.merge(options||{})
         options[:association] = association
         options[:nested_model_name] = association.options[:class_name]
