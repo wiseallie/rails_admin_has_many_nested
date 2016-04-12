@@ -23,14 +23,15 @@ module RailsAdmin
         module ClassMethods
 
           def initialize_has_many_nested
-            before_action :set_pjax_header
-            before_action :get_parent_model_and_object_and_nested_model, only: RailsAdmin::Config::Actions.all.select(&:nested_collection).collect(&:action_name)
-            before_action :get_nested_object, only: RailsAdmin::Config::Actions.all.select(&:nested_member).collect(&:action_name)
             # Does not behave well when there are other before filters
             # because it uses except
             # before_filter :get_model, except: RailsAdmin::Config::Actions.all(:root).collect(&:action_name)
             skip_before_action :get_model
-            before_action :_get_model, only: [RailsAdmin::Config::Actions.all(:collection).collect(&:action_name), RailsAdmin::Config::Actions.all(:member).collect(&:action_name)].flatten
+            prepend_before_action :_get_model, only: [RailsAdmin::Config::Actions.all(:collection).collect(&:action_name), RailsAdmin::Config::Actions.all(:member).collect(&:action_name)].flatten
+            before_action :get_parent_model_and_object_and_nested_model, only: RailsAdmin::Config::Actions.all.select(&:nested_collection).collect(&:action_name)
+            before_action :get_nested_object, only: RailsAdmin::Config::Actions.all.select(&:nested_member).collect(&:action_name)
+
+            prepend_before_action :set_pjax_header
 
             rescue_from ParentModelNotFound do
               flash[:error] = I18n.t('admin.flash.parent_model_not_found', parent_model: @parent_model_name)
