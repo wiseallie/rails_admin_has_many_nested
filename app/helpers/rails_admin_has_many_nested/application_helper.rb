@@ -100,8 +100,9 @@ module RailsAdminHasManyNested
     end
 
     def index_nested_menu_for(parent_abstract_model, parent_object, association_name, nested_abstract_model = nil, nested_object = nil, only_icon = false) # perf matters here (no action view trickery)
-      action = RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object))
-      [action].collect do |action|
+      actions = [RailsAdmin::Config::Actions.find(:index_nested, nested_bindings(parent_abstract_model: parent_abstract_model, parent_object: parent_object, association_name: association_name, nested_abstract_model: nested_abstract_model, nested_object: nested_object))]
+      actions = actions.flatten.compact.select{|action| action.visible?}
+      actions.collect do |action|
         url_options = {
           action: action.action_name,
           controller: 'rails_admin/main',
@@ -125,8 +126,9 @@ module RailsAdminHasManyNested
     end
 
     def index_menu_for(abstract_model = nil, object = nil, only_icon = false) # perf matters here (no action view trickery)
-      action = RailsAdmin::Config::Actions.find(:index, nested_bindings(abstract_model: abstract_model))
-      [action].collect do |action|
+      actions = [RailsAdmin::Config::Actions.find(:index, nested_bindings(abstract_model: abstract_model))]
+      actions = actions.flatten.compact.select{|action| action.visible?}
+      actions.collect do |action|
         wording = wording_for(:menu, action)
         %(
         <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_collection_link #{'active' if current_action?(action)}">
