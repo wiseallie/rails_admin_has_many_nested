@@ -1,0 +1,9 @@
+
+<ul class="nav nav-tabs">
+  <%= menu_for(:root) unless @abstract_model %>
+  <%= menu_for(:collection, @abstract_model, @object) if  @abstract_model &&  !@object.try(:persisted?) %>
+  <%= index_menu_for(@abstract_model, @object) if @object.try(:persisted?) %>
+  <%= menu_for(:member, @abstract_model, @object) if @object.try(:persisted?) %>
+  <%= menu_for_associations(:member, @abstract_model, @object) if @object.try(:persisted?) %>
+  <%= content_for :contextual_tabs %>
+</ul>

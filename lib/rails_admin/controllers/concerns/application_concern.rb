@@ -62,6 +62,10 @@ module RailsAdmin
             hide_action *ATTR_ACCESSORS_TO_DEFINE
 
             helper_method :nested_bindings, :nested_wording_for
+
+            self.instance_eval do
+              alias_method_chain :get_layout, :nested
+            end
           end
         end
 
@@ -123,12 +127,6 @@ module RailsAdmin
 
         protected
 
-        def set_pjax_header
-          if params[:pjax_nested] || request.xhr?
-            request.headers['X-PJAX'] = true
-          end
-        end
-
         # only for the purpose of allowing other before filters to go through
         def _get_model
           get_model
@@ -178,6 +176,22 @@ module RailsAdmin
         def get_nested_object
           get_parent_model_and_object_and_nested_model
           fail(NestedObjectNotFound) unless (@object = @nested_object = @nested_abstract_model.get(params[:id]))
+        end
+
+        private
+
+        def set_pjax_header
+          if params[:pjax_nested] || params[:pjax_nested_list]
+            request.headers['X-PJAX'] = true
+          end
+        end
+
+        def get_layout_with_nested
+          if params[:nested_iframe] &&  !request.headers['X-PJAX']
+            'rails_admin/application_child_iframe'
+          else
+            "rails_admin/#{request.headers['X-PJAX'] ? 'pjax' : 'application'}"
+          end
         end
 
       end #end  ApplicationConcern

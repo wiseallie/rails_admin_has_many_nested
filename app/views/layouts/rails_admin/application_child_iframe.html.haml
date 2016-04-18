@@ -1,12 +1,11 @@
 !!! 5
-%html.pjax-progress-bar{lang: I18n.locale}
+%html{lang: I18n.locale}
   %head
     %meta{content: "IE=edge", "http-equiv" => "X-UA-Compatible"}
     %meta{content: "text/html; charset=utf-8", "http-equiv" => "Content-Type"}
     %meta{content: "NONE,NOARCHIVE", name: "robots"}
     = csrf_meta_tag
     = stylesheet_link_tag "rails_admin/rails_admin.css", media: :all, 'data-pjax-track': true
-    = stylesheet_link_tag "rails_admin/has_many_nested.css", media: :all, 'data-pjax-track': true
 
     = javascript_include_tag "rails_admin/rails_admin.js", 'data-pjax-track': true
     = javascript_include_tag "rails_admin/has_many_nested.js", 'data-pjax-track': true
@@ -14,13 +13,8 @@
     -# Initialize JS simple i18n
     :javascript
       RailsAdmin.I18n.init('#{I18n.locale}', JSON.parse("#{j I18n.t("admin.js").to_json}"))
-  %body.rails_admin
+  %body.rails_admin.rails_admin_nested_iframe
     #loading.label.label-warning{style: 'display:none; position:fixed; right:20px; bottom:20px; z-index:100000'}= t('admin.loading')
-    %nav.navbar.navbar-default.navbar-fixed-top
-      = render "layouts/rails_admin/navigation"
-    .container-fluid
-      .row
-        .col-sm-3.col-md-2.sidebar-nav
-          = render "layouts/rails_admin/sidebar_navigation"
-        .col-sm-9.col-sm-offset-3.col-md-10.col-md-offset-2
-          .content{:'data-pjax-container' => true}= render template: params[:pjax_nested] ? 'layouts/rails_admin/pjax_nested' : 'layouts/rails_admin/pjax'
+    .row
+      .col-md-12
+        .content{:'data-pjax-container' => true, :'data-pjax-iframe-container' => true}= render template: 'layouts/rails_admin/pjax_nested'

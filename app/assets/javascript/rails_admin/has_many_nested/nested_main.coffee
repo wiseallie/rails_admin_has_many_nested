@@ -1,15 +1,9 @@
 $(document).on 'rails_admin.dom_ready', ->
-  $('[data-pjax-container] [data-pjax-container] [data-pjax-container] .pjax').not("[data-pjax-enabled]").removeClass("pjax").attr('data-pjax-nested', true)
-  $('[data-pjax-container] [data-pjax-container] [data-pjax-container] .pjax-form').removeClass("pjax-form").attr('data-pjax-form-nested', true)
+  $('[data-pjax-iframe-container] .pjax').not('[data-pjax-nested-list-link]').attr('data-pjax-nested', true)
+  $('[data-pjax-iframe-container] .pjax-form').removeClass("pjax-form").attr('data-pjax-form-nested', true)
 
-  $('[data-pjax-container]').find("[data-pjax-enabled], [data-pjax-nested]").removeClass("pjax")
-  $('[data-pjax-container]').find("[data-pjax-form-nested]").removeClass("pjax-form")
-
-  $('[data-nested-pjax-container] [data-pjax-nested]').attr('data-pjax-nested-list-link', true)
-  $('[data-nested-pjax-container] [data-pjax-form-nested]').attr('data-pjax-nested-list-form', true)
-
-  $('[data-pjax-container] .pjax').not("[data-pjax-enabled]").not("[data-pjax-nested]").removeClass("pjax").attr('data-pjax-unnested', true)
-  $('[data-pjax-container] .pjax-form').not("[data-pjax-form-nested]").removeClass("pjax-form").attr('data-pjax-form-unnested', true)
+  $("[data-pjax-nested], [data-pjax-nested-list-link]").removeClass("pjax")
+  $("[data-pjax-form-nested]").removeClass("pjax-form")
 
   return
 
@@ -17,9 +11,15 @@ $(document).on 'click', '[data-pjax-nested-list-link]', (event) ->
   event.preventDefault()
   $(this).parents("ul:first").find("li").removeClass("active")
   $(this).parents("li:first").addClass("active")
+  pjaxContainer = $($(this).data('pjax-container') || $(this).parents('[data-pjax-container]:last'))
+  url = $(this).attr('href');
+  iframeId = Math.random().toString().replace(".", "")
+  $(this).attr('i-frame-id', iframeId)
+  $(pjaxContainer).html("<iframe id='#{iframeId}' seamless='1' class='auto-resize-iframe' width='100%' scrolling='no'></iframe>")
+  $(document).trigger("pjax:start")
+  $("iframe##{iframeId}").attr('src', url)
+  $("iframe##{iframeId}").iframeAutoHeight({debug: true})
   return
-
-
 
 $(document).on 'click', '[data-pjax-unnested]', (event) ->
   if event.which > 1 || event.metaKey || event.ctrlKey
@@ -53,9 +53,9 @@ $(document).on 'click', '[data-pjax-nested]', (event) ->
 
     url = $(this).data('href') || $(this).attr('href')
     url += (if (url.indexOf('?') != -1) then '&' else '?') + 'pjax_nested=true'
-    if($(pjaxContainer).data('nested-pjax-container') || $(this).data('pjax-nested-list-link'))
-      url += "&pjax_nested_list=true"
-      $(pjaxContainer).attr('data-nested-pjax-container', true)
+    # if($(pjaxContainer).data('nested-pjax-container') || $(this).data('pjax-nested-list-link'))
+    #   url += "&pjax_nested_list=true"
+    #   $(pjaxContainer).attr('data-nested-pjax-container', true)
     $.pjax
       container: "#" + id
       url: url
@@ -91,9 +91,9 @@ $(document).on 'submit', '[data-pjax-form-nested]', (event) ->
     id = $(pjaxContainer).attr("id")
 
     url = this.action + (if (this.action.indexOf('?') != -1) then '&' else '?') + 'pjax_nested=true'
-    if($(pjaxContainer).data('nested-pjax-container') || $(this).data('pjax-nested-list-form'))
-      url += "&pjax_nested_list=true"
-      $(pjaxContainer).attr('data-nested-pjax-container', true)
+    # if($(pjaxContainer).data('nested-pjax-container') || $(this).data('pjax-nested-list-form'))
+    #   url += "&pjax_nested_list=true"
+      # $(pjaxContainer).attr('data-nested-pjax-container', true)
 
     url += $(this).serialize()
 

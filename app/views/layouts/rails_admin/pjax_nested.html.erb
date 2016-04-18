@@ -1,20 +1,9 @@
 <% @nested_object ||= @object %>
 
-<% unless params[:pjax_nested_list] %>
-  <script type="text/javascript">
-    $('.nav.nav-pills li.active').removeClass('active');
-    $('.nav.nav-pills li[data-model="<%= @parent_abstract_model ? @parent_abstract_model.to_param :  @abstract_model.to_param %>"]').addClass('active');
-  </script>
-  <title> <%= "#{@abstract_model.try(:pretty_name) || @page_name} | #{[_get_plugin_name[0] || 'Rails', _get_plugin_name[1] || 'Admin'].join(' ')}" %></title>
-<% end %>
-
-<%  unless params[:pjax_nested]%>
-  <% if @parent_object %>
-    <%= parent_breadcrumb %>
-  <% else %>
-    <%= breadcrumb %>
-  <% end %>
-<% end %>
+<script type="text/javascript">
+  $('.nav.nav-pills li.active').removeClass('active');
+  $('.nav.nav-pills li[data-model="#{@abstract_model.to_param}"]').addClass('active');
+</script>
 
 <% flash && flash.each do |key, value|  %>
   <div class="alert alert-dismissible <%= flash_alert_class(key) %>" >
@@ -23,46 +12,7 @@
   </div>
 <% end %>
 
-<% unless params[:pjax_nested]  %>
-    <div class="page-header">
-      <h3> <%= @page_name || "hello"%></h3>
-    </div>
-<% end %>
-
-
-<% if @parent_object %>
-  <div  id="<%=random_id %>" data-pjax-container="true">
-    <% unless params[:pjax_nested_list] %>
-    <ul class="nav nav-tabs">
-      <%= index_menu_for(@parent_abstract_model, @parent_object) %>
-      <%= menu_for((@parent_abstract_model ? (@parent_object.try(:persisted?) ? :member : :collection) : :root), @parent_abstract_model, @parent_object) %>
-      <%= menu_for_associations((@parent_abstract_model ? (@parent_object.try(:persisted?) ? :member : :collection) : :root), @parent_abstract_model, @parent_object) %>
-    </ul>
-    <% end %>
-
-    <div class="page-header">
-      <h4> <%= @page_name %></h4>
-    </div>
-
-    <ul class="nav nav-tabs">
-      <%= nested_menu_for(:nested_collection, @parent_abstract_model, @parent_object, @association_name, @nested_abstract_model, @nested_object) unless  @nested_object.try(:persisted?) %>
-      <%= index_nested_menu_for(@parent_abstract_model, @parent_object, @association_name, @nested_abstract_model, @nested_object) if @nested_object.try(:persisted?) %>
-      <%= nested_menu_for(:nested_member, @parent_abstract_model, @parent_object, @association_name, @nested_abstract_model, @nested_object) if @nested_object.try(:persisted?) %>
-      <%= nested_menu_for_associations(:nested_member, @nested_abstract_model, @nested_object) if @nested_object.try(:persisted?) %>
-      <%=  content_for :contextual_tabs %>
-    </ul>
-    <div  id="<%= second_random_id %>"><%= yield %></div>
-  </div>
-<% else %>
-  <div  id="<%=random_id %>" >
-    <ul class="nav nav-tabs">
-      <%= menu_for(:root) unless @abstract_model %>
-      <%= menu_for(:collection, @abstract_model, @object) unless  @object.try(:persisted?) %>
-      <%= index_menu_for(@abstract_model, @object) if @object.try(:persisted?) %>
-      <%= menu_for(:member, @abstract_model, @object) if @object.try(:persisted?) %>
-      <%= menu_for_associations(:member, @abstract_model, @object) if @object.try(:persisted?) %>
-      <%= content_for :contextual_tabs %>
-    </ul>
-    <%= yield %>
-  </div>
-<% end %>
+<div  id="<%=random_id %>" >
+  <%= render 'layouts/rails_admin/menu'%>
+  <%= yield %>
+</div>

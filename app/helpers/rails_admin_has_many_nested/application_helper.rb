@@ -54,14 +54,13 @@ module RailsAdminHasManyNested
               parent_model_name: parent_abstract_model.try(:to_param),
               parent_object_id: parent_object.try(:id),
               association_name: association_name,
-              pjax_nested: true,
-              pjax_nested_list: true
+              nested_iframe: true
             }
             href = url_for(url_options)
             is_active = @association_name == association_name
             link_collection << %(
             <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if is_active}">
-            <a class="#{action.pjax? ? 'pjax' : ''}" data-pjax-nested='true' data-pjax-nested-list-link='true'  data-pjax-container="##{second_random_id}" href="#{href}" >
+            <a class="#{action.pjax? ? 'pjax' : ''}" data-pjax-nested-list-link='true' data-nested-iframe='true' data-pjax-container="##{second_random_id}" href="#{href}" >
             <i class="#{options[:link_icon]||action.link_icon}"></i>
             <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
             </a>
@@ -143,6 +142,7 @@ module RailsAdminHasManyNested
 
     #(key, abstract_model = nil, object = nil)
     def parent_breadcrumb(action = @action, _acc = [], options = {})
+      parent_actions ||= []
       begin
         (parent_actions ||= []) << action unless action.nested_member
       end while action.breadcrumb_parent && (action = action(*action.breadcrumb_parent)) # rubocop:disable Loop
@@ -187,6 +187,7 @@ module RailsAdminHasManyNested
     end
 
     def nested_breadcrumb(action = @action, _acc = [], options = {})
+      parent_actions ||= []
       begin
         (parent_actions ||= []) << action
       end while  action.breadcrumb_parent && (action = action(*action.breadcrumb_parent)) # rubocop:disable Loop

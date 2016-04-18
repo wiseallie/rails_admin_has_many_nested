@@ -1,0 +1,7 @@
+<ul class="nav nav-tabs">
+  <%= nested_menu_for(:nested_collection, @parent_abstract_model, @parent_object, @association_name, @nested_abstract_model, @nested_object)  if  @nested_abstract_model && !@nested_object.try(:persisted?) %>
+  <%= index_nested_menu_for(@parent_abstract_model, @parent_object, @association_name, @nested_abstract_model, @nested_object) if @nested_object.try(:persisted?) %>
+  <%= nested_menu_for(:nested_member, @parent_abstract_model, @parent_object, @association_name, @nested_abstract_model, @nested_object) if @nested_object.try(:persisted?) %>
+  <%= nested_menu_for_associations(:nested_member, @nested_abstract_model, @nested_object) if @nested_object.try(:persisted?) %>
+  <%=  content_for :contextual_tabs %>
+</ul>

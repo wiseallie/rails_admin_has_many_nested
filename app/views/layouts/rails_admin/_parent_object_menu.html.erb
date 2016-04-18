@@ -1,0 +1,5 @@
+<ul class="nav nav-tabs">
+  <%= index_menu_for(@parent_abstract_model, @parent_object) %>
+  <%= menu_for((@parent_abstract_model ? (@parent_object.try(:persisted?) ? :member : :collection) : :root), @parent_abstract_model, @parent_object) %>
+  <%= menu_for_associations((@parent_abstract_model ? (@parent_object.try(:persisted?) ? :member : :collection) : :root), @parent_abstract_model, @parent_object) %>
+</ul>

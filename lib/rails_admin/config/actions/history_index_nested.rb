@@ -10,13 +10,26 @@ module RailsAdmin
           false
         end
 
+        register_instance_option :member do
+          false
+        end
+
         register_instance_option :nested_collection do
           true
         end
 
+        register_instance_option :route_fragment do
+          'history_nested'
+        end
+
+        register_instance_option :authorization_key do
+          :history_nested
+        end
+
+
         # View partial name (called in default :controller block)
         register_instance_option :template_name do
-          :history_index_nested
+          :history_nested
         end
 
       end
