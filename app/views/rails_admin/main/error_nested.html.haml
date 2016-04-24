@@ -1,1 +1,6 @@
-
+<% flash && flash.each do |key, value|  %>
+  <div class="alert alert-dismissible <%= flash_alert_class(key) %>" >
+    <button class="close" type='button' data-dismiss="alert"> &times</button>
+    <%= value %>
+  </div>
+<% end %>
