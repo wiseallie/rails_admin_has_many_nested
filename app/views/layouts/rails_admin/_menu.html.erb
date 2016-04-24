@@ -1,5 +1,4 @@
-
-<ul class="nav nav-tabs">
+<ul class="item-menu-tabs nav nav-tabs">
   <%= menu_for(:root) unless @abstract_model %>
   <%= menu_for(:collection, @abstract_model, @object) if  @abstract_model &&  !@object.try(:persisted?) %>
   <%= index_menu_for(@abstract_model, @object) if @object.try(:persisted?) %>

@@ -26,6 +26,8 @@ module RailsAdmin
           :index_nested
         end
 
+        
+
       end
     end
   end

@@ -65,6 +65,7 @@ module RailsAdmin
 
             self.instance_eval do
               alias_method_chain :get_layout, :nested
+              alias_method_chain :check_for_cancel, :nested
             end
           end
         end
@@ -178,20 +179,42 @@ module RailsAdmin
           fail(NestedObjectNotFound) unless (@object = @nested_object = @nested_abstract_model.get(params[:id]))
         end
 
+
+        def redirect_to_on_success_nested(options={})
+          notice = I18n.t('admin.flash.successful', name: @model_config.label, action: I18n.t("admin.actions.#{@action.key}.done"))
+          if params[:_add_another]
+            redirect_to new_nested_path(options.merge(return_to: params[:return_to])), flash: {success: notice}
+          elsif params[:_add_edit]
+            redirect_to edit_nested_path(options.merge(id: @object.id, return_to: params[:return_to])), flash: {success: notice}
+          else
+            redirect_to back_or_index_nested(options), flash: {success: notice}
+          end
+        end
+
+        def back_or_index_nested(options={})
+          index_nested_path(options)
+        end
+
         private
 
         def set_pjax_header
-          if params[:pjax_nested] || params[:pjax_nested_list]
+          if params[:pjax_nested] || params[:pjax_nested_list] || request.headers['X-PJAX-NESTED']
+            @pjax_nested = true
             request.headers['X-PJAX'] = true
           end
         end
 
         def get_layout_with_nested
-          if params[:nested_iframe] &&  !request.headers['X-PJAX']
-            'rails_admin/application_child_iframe'
+          if @pjax_nested || params[:pjax_nested] || params[:pjax_nested_list] || request.headers['X-PJAX-NESTED']
+            'rails_admin/pjax_nested'
           else
             "rails_admin/#{request.headers['X-PJAX'] ? 'pjax' : 'application'}"
           end
+        end
+
+        def check_for_cancel_with_nested
+          return unless params[:_continue] || (params[:bulk_action] && !params[:bulk_ids])
+          redirect_to(@pjax_nested ?  back_or_index_nested(pjax_nested: true) :  back_or_index , notice: I18n.t('admin.flash.noaction'))
         end
 
       end #end  ApplicationConcern

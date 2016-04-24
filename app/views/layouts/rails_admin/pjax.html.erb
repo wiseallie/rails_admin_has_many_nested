@@ -21,7 +21,7 @@
 <% end %>
 
 <div class="page-header">
-  <h3> <%= @page_name || "hello"%></h3>
+  <h3> <%= @page_name %></h3>
 </div>
 
 <% if @parent_object %>
@@ -31,7 +31,7 @@
       <h4> <%= @page_name %></h4>
     </div>
     <%= render 'layouts/rails_admin/nested_menu'%>
-    <div  id="<%= second_random_id %>"><%= yield %></div>
+    <div id="<%= second_random_id %>"><%= yield %></div>
   </div>
 <% else %>
   <div  id="<%=random_id %>" >

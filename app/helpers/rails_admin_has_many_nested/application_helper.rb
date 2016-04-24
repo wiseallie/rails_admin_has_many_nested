@@ -53,14 +53,13 @@ module RailsAdminHasManyNested
               controller: 'rails_admin/main',
               parent_model_name: parent_abstract_model.try(:to_param),
               parent_object_id: parent_object.try(:id),
-              association_name: association_name,
-              nested_iframe: true
+              association_name: association_name
             }
             href = url_for(url_options)
             is_active = @association_name == association_name
             link_collection << %(
             <li title="#{wording if only_icon}" rel="#{'tooltip' if only_icon}" class="icon #{action.key}_#{parent}_link #{'active' if is_active}">
-            <a class="#{action.pjax? ? 'pjax' : ''}" data-pjax-nested-list-link='true' data-nested-iframe='true' data-pjax-container="##{second_random_id}" href="#{href}" >
+            <a class="#{action.pjax? ? 'pjax' : ''}" data-pjax-nested='true' data-pjax-container="##{second_random_id}" href="#{href}" >
             <i class="#{options[:link_icon]||action.link_icon}"></i>
             <span#{only_icon ? " style='display:none'" : ''}>#{wording}</span>
             </a>
