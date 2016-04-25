@@ -17,6 +17,6 @@
 </div>
 
 <div  id="<%=random_id %>" >
-  <%= render 'layouts/rails_admin/nested_menu'%>
+  <%= render "layouts/rails_admin/#{ params[:no_parent] || !@parent_object ?  'menu' : 'nested_menu'}"%>
   <%= yield %>
 </div>
